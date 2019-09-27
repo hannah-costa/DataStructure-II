@@ -138,22 +138,57 @@ def randomPartition(array, start, end):
 
 
 def mergeSort(array, left, right, arrayAux=None):
+    # in the first execution, arrayAux will be none(null). arrayAux will be created and passed as
+    # a parameter for the next executions.
     if arrayAux is None:
         arrayAux = array[:]
-    if left < right:
+
+    # checking whether the received array or subarray has more than one element.
+    if left < right:  # Todo: fix this! Left will never be equal or more than right.
         half = (right - left) // 2
         mergeSort(array, left, half, arrayAux)
         mergeSort(array, half + 1, right, arrayAux)
-        merge(array, left, right, arrayAux)
+        merge(array, left, right, half, arrayAux)
+    else:
+        return array
 
-    return array
+    # return array
 
 
-def merge(array, left, right, arrayAux):
-    leftEnd = right-1
-    auxPos = left
+def merge(array, left, right, half, arrayAux):
+    # cur variables will iterate through the array and make comparisons.
+    # auxCur indicates the current position in arrayAux.
+    leftCur = left
+    leftEnd = half
+    rightCur = half+1
+    rightEnd = right
+    auxCur = left
 
-    while left <= leftEnd and right <= ri
+    # while none of the subarrays have reached an end.
+    while leftCur <= leftEnd and rightCur <= rightEnd:
+        if array[leftCur] <= array[rightCur]:
+            arrayAux[auxCur] = array[leftCur]
+            leftCur += 1
+        else:
+            arrayAux[auxCur] = array[rightCur]
+            rightCur += 1
+        auxCur += 1
+
+    # only executes when the right subarray has reached an end and the left one hasn't.
+    while leftCur <= leftEnd:
+        arrayAux[auxCur] = array[leftCur]
+        auxCur += 1
+        leftCur += 1
+
+    # only executes when the left subarray has reached an end and the right one hasn't.
+    while rightCur <= rightEnd:
+        arrayAux[auxCur] = array[rightCur]
+        auxCur += 1
+        rightEnd += 1
+
+    # now copy every element of the sorted arrayAux to the original array.
+    for i in range(len(array)):
+        array[i] = arrayAux[i]
 
 
 # durand
@@ -199,4 +234,4 @@ if __name__ == '__main__':
     # print(quickSort(array, 0, 7)) # quicksort
     # print(quickSort(array, 0, 7, 2)) # quicksort with partial insertion
     # print(mergeSort(array, 0, 7)
-    print(mergeSort(array))
+    print(mergeSort(array, 0, 7))
