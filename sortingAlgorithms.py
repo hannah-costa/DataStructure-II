@@ -1,10 +1,11 @@
 import random
 
-''''''''''''''''''''''''
-'''  INSERTIONSORT  '''
-''''''''''''''''''''''''
 
-
+##-------------------------------##
+#         INSERTIONSORT           #
+##-------------------------------##
+# Starts with element i at index 1 and compares with elements j (sorted part of the array),
+# then puts element i in its correct position.
 def insertionSort(array):
     for i in range(1, len(array)):
         j = i - 1
@@ -16,9 +17,9 @@ def insertionSort(array):
     return array
 
 
-''''''''''''''''''''''''
-'''  SELECTIONSORT  '''
-''''''''''''''''''''''''
+##-------------------------------##
+#         SELECTIONSORT           #
+##-------------------------------##
 
 
 def selectionSort(array):
@@ -31,9 +32,9 @@ def selectionSort(array):
     return array
 
 
-''''''''''''''''''''''''
-'''    SHELLSORT    '''
-''''''''''''''''''''''''
+##-------------------------------##
+#           SHELLSORT             #
+##-------------------------------##
 
 
 def shellSort(array):
@@ -54,12 +55,14 @@ def shellSort(array):
     return array
 
 
-''''''''''''''''''''''''
-'''    QUICKSORT    '''
-''''''''''''''''''''''''
-
-
-def quickSort(array, start, end):
+##-------------------------------##
+#           QUICKSORT             #
+##-------------------------------##
+# "Randomized" quicksort. The function randomPartition() gets a random index and switches its position with the last
+#  index, using the last element (random) as the pivot.
+def quickSort(array, start=0, end=-1):
+    if end == -1:
+        end = len(array) - 1
     if start < end:
         pivot = randomPartition(array, start, end)
 
@@ -70,6 +73,7 @@ def quickSort(array, start, end):
 
 
 def partition(array, start, end):
+    # uses the last element as the pivot.
     pivot = end
     i = start - 1
     j = start
@@ -84,29 +88,33 @@ def partition(array, start, end):
     return i + 1
 
 
+# Chooses a random index in the array and switches it with the element at the last position,
+#  then calls the partition() function.
 def randomPartition(array, start, end):
     pivot = random.randint(start, end)
     array[pivot], array[end] = array[end], array[pivot]
     return partition(array, start, end)
 
 
-''''''''''''''''''''''''
-'''   QUICKSORT P.I. '''
-''''''''''''''''''''''''
+##-------------------------------##
+#  QUICKSORT - PARTIAL INSERTION  #
+##-------------------------------##
 
-
-def quickSort(array, start, end, L=-1):
+def quickSortPI(array, start=0, end=-1, L=-1):
+    if end == -1:
+        end = len(array) - 1
     if start < end:
         pivot = randomPartition(array, start, end)
-
+        # checks if the partition [start:pivot] is <= L.
         if pivot - 1 - start <= L:
             insertionSort(array[start:pivot - 1])
         else:
-            quickSort(array, start, pivot - 1)
+            quickSortPI(array, start, pivot - 1)
+        # checks if the partition [pivot+1:end] is <= L.
         if end - pivot + 1 <= L:
             insertionSort(array[pivot + 1:end])
         else:
-            quickSort(array, pivot + 1, end)
+            quickSortPI(array, pivot + 1, end)
 
     return array
 
@@ -132,27 +140,68 @@ def randomPartition(array, start, end):
     return partition(array, start, end)
 
 
-''''''''''''''''''''''''
-'''    MERGESORT    '''
-''''''''''''''''''''''''
+##-------------------------------##
+#   QUICKSORT - FINAL INSERTION   #
+##-------------------------------##
+def quickSortFI(array, start=0, end=-1, L=-1):
+    if end == -1:
+        end = len(array) - 1
+    if start < end:
+        pivot = randomPartition(array, start, end)
+
+        # checks if the partition [start:pivot] is <= L.
+        if pivot - 1 - start > L:
+            quickSortPI(array, start, pivot - 1)
+        # checks if the partition [pivot+1:end] is <= L.
+        if end - pivot + 1 > L:
+            quickSortPI(array, pivot + 1, end)
+
+        insertionSort(array[start:pivot - 1])
+        insertionSort(array[pivot + 1:end])
+
+    return array
 
 
-def mergeSort(array, left, right, arrayAux=None):
+def partition(array, start, end):
+    pivot = end
+    i = start - 1
+    j = start
+    while j < end:
+        if array[j] <= array[pivot]:
+            i += 1
+            array[i], array[j] = array[j], array[i]
+        j += 1
+    array[pivot], array[i + 1] = array[i + 1], array[pivot]
+
+    # returns the new pivot position:
+    return i + 1
+
+
+def randomPartition(array, start, end):
+    pivot = random.randint(start, end)
+    array[pivot], array[end] = array[end], array[pivot]
+    return partition(array, start, end)
+
+
+##-------------------------------##
+#           MERGESORT             #
+##-------------------------------##
+
+def mergeSort(array, left=0, right=-1, arrayAux=None):
     # in the first execution, arrayAux will be none(null). arrayAux will be created and passed as
     # a parameter for the next executions.
+    if right == -1:
+        right = len(array) - 1
     if arrayAux is None:
         arrayAux = array[:]
-
+    half = left + (right - left) // 2
     # checking whether the received array or subarray has more than one element.
-    if left < right:  # Todo: fix this! Left will never be equal or more than right.
-        half = (right - left) // 2
+    if left < right:
         mergeSort(array, left, half, arrayAux)
         mergeSort(array, half + 1, right, arrayAux)
         merge(array, left, right, half, arrayAux)
-    else:
-        return array
 
-    # return array
+    return array
 
 
 def merge(array, left, right, half, arrayAux):
@@ -160,7 +209,7 @@ def merge(array, left, right, half, arrayAux):
     # auxCur indicates the current position in arrayAux.
     leftCur = left
     leftEnd = half
-    rightCur = half+1
+    rightCur = half + 1
     rightEnd = right
     auxCur = left
 
@@ -184,54 +233,144 @@ def merge(array, left, right, half, arrayAux):
     while rightCur <= rightEnd:
         arrayAux[auxCur] = array[rightCur]
         auxCur += 1
-        rightEnd += 1
+        rightCur += 1
 
     # now copy every element of the sorted arrayAux to the original array.
     for i in range(len(array)):
         array[i] = arrayAux[i]
 
 
-# durand
-'''
-def mergeSort(array):
-    if len(array) > 1:
-        half = len(array) // 2
-        arrayLeft = mergeSort(array[:half])
-        arrayRight = mergeSort((array[half:]))
+##---------------------------------------##
+#      MERGESORT - PARTIAL INSERTION      #
+##---------------------------------------##
+def mergeSortPI(array, left=0, right=-1, L=-1, arrayAux=None):
+    # in the first execution, arrayAux will be none(null). arrayAux will be created and passed as
+    # a parameter for the next executions.
+    if right == -1:
+        right = len(array) - 1
+    if arrayAux is None:
+        arrayAux = array[:]
+    half = left + (right - left) // 2
+    # checking whether the received array or subarray has more than one element.
+    if left < right:
+        if half - left <= L:
+            insertionSort(arrayAux[left:half + 1])
+        else:
+            mergeSort(array, left, half, arrayAux)
+        if right - half + 1 <= L:
+            insertionSort(arrayAux[half + 1:right])
+        else:
+            mergeSort(array, half + 1, right, arrayAux)
+        merge(array, left, right, half, arrayAux)
 
-        i, j, k = 0, 0, 0
-        while i < len(arrayLeft) and j < len(arrayRight):
-            if arrayLeft[i] < arrayRight[j]:
-                array[k] = arrayLeft[i]
-                i += 1
-                k += 1
-            else:
-                array[k] = arrayRight[j]
-                j += 1
-                k += 1
+    return array
 
-        while i < len(arrayLeft):
-            array[k] = arrayLeft[i]
-            i += 1
-            k += 1
 
-        while j < len(arrayRight):
-            array[k] = arrayRight[j]
-            j += 1
-            k += 1
+def merge(array, left, right, half, arrayAux):
+    # cur variables will iterate through the array and make comparisons.
+    # auxCur indicates the current position in arrayAux.
+    leftCur = left
+    leftEnd = half
+    rightCur = half + 1
+    rightEnd = right
+    auxCur = left
 
-        return array
+    # while none of the subarrays have reached an end.
+    while leftCur <= leftEnd and rightCur <= rightEnd:
+        if array[leftCur] <= array[rightCur]:
+            arrayAux[auxCur] = array[leftCur]
+            leftCur += 1
+        else:
+            arrayAux[auxCur] = array[rightCur]
+            rightCur += 1
+        auxCur += 1
 
-    else:
-        return array
-'''
+    # only executes when the right subarray has reached an end and the left one hasn't.
+    while leftCur <= leftEnd:
+        arrayAux[auxCur] = array[leftCur]
+        auxCur += 1
+        leftCur += 1
+
+    # only executes when the left subarray has reached an end and the right one hasn't.
+    while rightCur <= rightEnd:
+        arrayAux[auxCur] = array[rightCur]
+        auxCur += 1
+        rightCur += 1
+
+    # now copy every element of the sorted arrayAux to the original array.
+    for i in range(len(array)):
+        array[i] = arrayAux[i]
+
+
+##---------------------------------------##
+#       MERGESORT - FINAL INSERTION       #
+##---------------------------------------##
+def mergeSortFI(array, left=0, right=-1, L=-1, arrayAux=None):
+    # in the first execution, arrayAux will be none(null). arrayAux will be created and passed as
+    # a parameter for the next executions.
+    if right == -1:
+        right = len(array) - 1
+    if arrayAux is None:
+        arrayAux = array[:]
+    half = left + (right - left) // 2
+    # checking whether the received array or subarray has more than one element.
+    if left < right:
+        if half - left > L:
+            mergeSort(array, left, half, arrayAux)
+        if right - half > L:
+            mergeSort(array, half + 1, right, arrayAux)
+        merge(array, left, right, half, arrayAux)
+        insertionSort(array)
+
+    return array
+
+
+def merge(array, left, right, half, arrayAux):
+    # cur variables will iterate through the array and make comparisons.
+    # auxCur indicates the current position in arrayAux.
+    leftCur = left
+    leftEnd = half
+    rightCur = half + 1
+    rightEnd = right
+    auxCur = left
+
+    # while none of the subarrays have reached an end.
+    while leftCur <= leftEnd and rightCur <= rightEnd:
+        if array[leftCur] <= array[rightCur]:
+            arrayAux[auxCur] = array[leftCur]
+            leftCur += 1
+        else:
+            arrayAux[auxCur] = array[rightCur]
+            rightCur += 1
+        auxCur += 1
+
+    # only executes when the right subarray has reached an end and the left one hasn't.
+    while leftCur <= leftEnd:
+        arrayAux[auxCur] = array[leftCur]
+        auxCur += 1
+        leftCur += 1
+
+    # only executes when the left subarray has reached an end and the right one hasn't.
+    while rightCur <= rightEnd:
+        arrayAux[auxCur] = array[rightCur]
+        auxCur += 1
+        rightCur += 1
+
+    # now copy every element of the sorted arrayAux to the original array.
+    for i in range(len(array)):
+        array[i] = arrayAux[i]
+
 
 if __name__ == '__main__':
-    array = [6, 1, 3, 4, 3, 2, 9, 3]
+    array = [5, 1, 3, 7, 19, 8, 17, 3, 58, 33, 37, 9, 1, 7, 9]
+    # array = [6, 1, 3, 4, 3, 2, 9, 3]
+    #       [1, 2, 3, 3, 3, 4, 6, 9]
     # print(insertionSort(array))
     # print(selectionSort(array))
     # print(shellSort(array))
-    # print(quickSort(array, 0, 7)) # quicksort
-    # print(quickSort(array, 0, 7, 2)) # quicksort with partial insertion
-    # print(mergeSort(array, 0, 7)
-    print(mergeSort(array, 0, 7))
+    # print(quickSort(array))  # quicksort
+    # print(quickSortPI(array, L=10))  # quicksort with partial insertion
+    # print(quickSortFI(array, L=5))  # quicksort with final insertion
+    print(mergeSort(array))
+    print(mergeSortPI(array, L=5))  # mergesort with final insertion
+    print(mergeSortFI(array, L=2))  # mergesort with final insertion
